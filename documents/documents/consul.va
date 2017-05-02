@@ -1,0 +1,75 @@
+安装consul      unzip consul_0.8.0_linux_amd64.zip
+cp consul /usr/local/bin
+启动consul consul agent -dev &
+说明：
+-dev（该节点的启动不能用于生产环境，因为该模式下不会持久化任何状态），该启动模式仅仅是为了快速便捷的启动单节点consul
+该节点处于server模式
+该节点是leader
+该节点是一个健康节点
+
+
+consul members
+查看consul cluster中的每一个consul节点的信息
+
+说明：
+
+Address：节点地址
+Status：alive表示节点健康
+Type：server运行状态是server状态
+DC：dc1表示该节点属于DataCenter1
+注意：
+
+members命令的输出是基于gossip协议的，并且是最终一致的（也就是说，某一个时刻你去运用该命令查到的consul节点的状态信息可能是有误的）
+
+
+
+
+
+curl localhost:8500/v1/catalog/nodes
+
+
+
+
+
+consul agent --help  查看agent帮助
+
+
+
+consul 集群安装
+开启Bootstrap Server
+
+一开始学习consul， 我们需要让consul 运行起来。consul server推荐至少在3~5个之间，推荐的方法是一开始启动其中一台server，并且配置到bootstrap的模式，
+该模式node可以指定自己作为leader，而不用进行选举。然后再依次启动其他server，配置为非bootstrap的模式。最后把第一个serverbootstrap模式停止，重新以非bootstrap模式启动，
+这样server之间就可以自动选举leader。
+在上面的表中，我们需要指定server 1 做为bootstrap server，可以run下面的命令，以下是启动的过程。可以看到bootstrap模式下配置自己为leader。
+nohup consul agent -server -bootstrap -data-dir=/home/work/data/consul > ~/logs/consul/nohup_consul.out 2>&1 &
+
+第二， 第三个服务器:  nohup consul agent -server -data-dir=/home/work/data/consul -join 192.168.25.128 > ~/logs/consul/nohup_consul.out 2>&1 &
+
+
+第一个服务器重启: nohup consul agent -server -data-dir=/home/work/data/consul -ui -bind='192.168.25.128' -client 0.0.0.0 > ~/logs/consul/nohup_consul.out 2>&1 &
+
+consul agent -join 192.168.25.128
+
+
+
+查看节点信息 ： consul info | grep state
+
+
+
+客户端链接 windows: consul agent -data-dir=D:\TGOP\ServiceDiscovery\ConsulData -node=client.1 -bind=192.168.235.83 -client=127.0.0.1 -dc=dc1 -join 192.168.25.128
+
+客户端链接 centos: nohup consul agent -data-dir=~/ServiceDiscovery\ConsulData -node=client.2 -bind=192.168.25.131 -client=127.0.0.1 -dc=dc1 -join 192.168.25.128 > ~/logs/consul/nohup_consul.out 2>&1 &
+
+
+
+
+
+
+
+
+
+
+
+
+http://mp.weixin.qq.com/s/Shyhp_fLlv9-HSs3qlM0aQ
